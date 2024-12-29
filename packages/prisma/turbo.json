@@ -1,0 +1,15 @@
+{
+  "extends": ["//"],
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "dev": {
+      "dependsOn": ["^postinstall"],
+      "cache": false,
+      "persistent": true
+    },
+    "build": {
+      "dependsOn": ["^postinstall"],
+      "outputs": ["./src/**", "./src/generated/client/**"]
+    }
+  }
+}
