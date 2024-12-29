@@ -1,15 +1,15 @@
 /** @format */
 
 import {
-	acceptTransaction,
-	getTransactionsFrom,
+  acceptTransaction,
+  getTransactionsFrom,
 } from "./../controllers/transactions.controller";
 /** @format */
 
 import { Router } from "express";
 import {
-	createTransaction,
-	getTransactions,
+  createTransaction,
+  getTransactions,
 } from "../controllers/transactions.controller";
 import { createTransactionSchema } from "../schemas/transactions.schema";
 import ValidationPipe from "../pipes/validation.pipes";
@@ -19,10 +19,10 @@ const transactionsRouter = Router();
 transactionsRouter.get("/:id", getTransactions);
 
 transactionsRouter.post(
-	"/",
-	authMiddleware,
-	ValidationPipe(createTransactionSchema),
-	createTransaction
+  "/",
+  authMiddleware,
+  ValidationPipe(createTransactionSchema),
+  createTransaction,
 );
 
 transactionsRouter.get("/from/:id", getTransactionsFrom);

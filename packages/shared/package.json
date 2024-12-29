@@ -1,0 +1,11 @@
+{
+	"name": "@cleartrack/shared",
+	"version": "1.0.0",
+	"private": true,
+	"exports": {
+		"./types": "./src/index.d.ts"
+	},
+	"dependencies": {
+		"typescript": "latest"
+	}
+}

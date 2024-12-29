@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(undefined);
       }
     })();
-  }, []);
+  }, [token]);
 
   const signIn = async (email: string, password: string) => {
     let res;

@@ -1,0 +1,14 @@
+{
+	"name": "@cleartrack/prisma",
+	"version": "1.0.0",
+	"private": true,
+	"exports": {
+		".": "./src/index.ts",
+		"./client": "./src/generated/client/default.d.ts"
+	},
+	"dependencies": {
+		"typescript": "latest",
+		"@prisma/client": "^6.1.0",
+		"prisma": "^6.1.0"
+	}
+}

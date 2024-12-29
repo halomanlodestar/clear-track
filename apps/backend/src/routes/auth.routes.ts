@@ -4,11 +4,11 @@ import { Router } from "express";
 import ValidationPipe from "@/pipes/validation.pipes";
 import { loginSchema, registerSchema } from "@/schemas/auth.schema";
 import {
-	login,
-	logout,
-	me,
-	refresh,
-	register,
+  login,
+  logout,
+  me,
+  refresh,
+  register,
 } from "@/controllers/auth.controller";
 import { authMiddleware } from "@/middlewares/auth.middlewares";
 

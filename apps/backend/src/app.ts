@@ -1,12 +1,14 @@
-/** @format */
 import express from "express";
 import { mainRouter } from "@/routes";
-import prisma from "@/config/database";
 import { env } from "./config/env";
+import { prisma } from "@cleartrack/prisma";
 
 env();
 
 const app = express();
+
+console.log("🚀 Starting server...");
+console.log("🔌 Connecting to database...");
 
 await prisma.$connect().then(() => console.log("✅ Connected to database"));
 

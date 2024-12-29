@@ -1,7 +1,7 @@
 /** @format */
-import { Link } from "@tanstack/react-router";
-import { Transaction } from "../../types";
+import { Link, redirect } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
+import { Transaction } from "@cleartrack/shared/types";
 
 interface Props {
   transaction: Transaction;
