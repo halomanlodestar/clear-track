@@ -6,6 +6,9 @@
 		".": "./src/index.ts",
 		"./client": "./src/generated/client/default.d.ts"
 	},
+	"scripts": {
+		"postinstall": "prisma generate"
+	},
 	"dependencies": {
 		"typescript": "latest",
 		"@prisma/client": "^6.1.0",
