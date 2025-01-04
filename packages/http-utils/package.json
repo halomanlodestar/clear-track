@@ -4,7 +4,9 @@
   "private": true,
   "exports": {
     ".": "./src/index.ts",
-    "./errors": "./src/errors/index.ts"
+    "./errors": "./src/errors/index.ts",
+    "./error/5xx": "./src/errors/5xx-error.ts",
+    "./error/4xx": "./src/errors/4xx-error.ts"
   },
   "dependencies": {
     "typescript": "latest",

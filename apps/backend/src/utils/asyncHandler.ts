@@ -1,15 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import { Controller } from "@/types";
 import { HttpError } from "@cleartrack/http-utils/errors";
-
-const asyncHandler = (fn: Function) => {
-  return (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch((err: HttpError) => {
-      res.json({ message: err.message }).status(err.status);
-    });
-  };
-};
+import { HttpResponse } from "@cleartrack/http-utils";
 
 export const controller = (fn: Controller): Controller => {
-  return asyncHandler(fn);
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const response: HttpResponse = await fn(req, res, next);
+      res.status(response.status).json(response.data);
+    } catch (error) {
+      if (error instanceof HttpError) {
+        return res.status(error.status).json({ message: error.message });
+      }
+
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
 };

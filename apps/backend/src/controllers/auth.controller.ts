@@ -6,9 +6,10 @@ import { controller } from "@/utils/asyncHandler";
 import { HttpResponse } from "@cleartrack/http-utils";
 import {
   BadRequestError,
-  InternalServerError,
   NotFoundError,
-} from "@cleartrack/http-utils/errors";
+  UnauthorizedError,
+} from "@cleartrack/http-utils/error/4xx";
+import { InternalServerError } from "@cleartrack/http-utils/error/5xx";
 
 const ACCESS_TOKEN_EXPIRY = 1000 * 60 * 15;
 const REFRESH_TOKEN_EXPIRY = 1000 * 60 * 60 * 24 * 7;
@@ -69,7 +70,8 @@ export const login = controller(async (req, res, next) => {
     httpOnly: true,
   });
 
-  res.status(200).json({ message: "Logged in" });
+  // res.status(200).json({ message: "Logged in" });
+  return new HttpResponse(200, { message: "Logged in" });
 });
 
 export const register = controller(async (req, res, next) => {
@@ -86,7 +88,8 @@ export const register = controller(async (req, res, next) => {
       },
     });
 
-    res.status(201).json({ user });
+    // res.status(201).json({ user });
+    return new HttpResponse(201, { user });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       // res.status(400).json({ message: "Already Registered" });
@@ -100,15 +103,17 @@ export const logout = controller((req, res, next) => {
   // res.clearCookie("access_token");
   res.clearCookie("refresh_token");
 
-  res.status(200).json({ message: "Logged out" });
+  // res.status(200).json({ message: "Logged out" });
+  return new HttpResponse(204);
 });
 
 export const refresh = controller(async (req, res, next) => {
   const refreshToken = req.cookies.refresh_token;
 
   if (!refreshToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
   let payload: any;
@@ -116,8 +121,9 @@ export const refresh = controller(async (req, res, next) => {
   try {
     payload = jwt.verify(refreshToken, process.env.JWT_SECRET!);
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
   const user = await prisma.user.findUnique({
@@ -127,8 +133,9 @@ export const refresh = controller(async (req, res, next) => {
   });
 
   if (!user) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
   const accessToken = jwt.sign(
@@ -141,15 +148,17 @@ export const refresh = controller(async (req, res, next) => {
   // 	expires: new Date(Date.now() + ACCESS_TOKEN_EXPIRY),
   // });
 
-  res.status(200).json({ accessToken });
+  // res.status(200).json({ accessToken });
+  return new HttpResponse(200, { accessToken });
 });
 
 export const me = controller(async (req, res, next) => {
   const accessToken = req.headers.authorization?.split(" ")[1];
 
   if (!accessToken) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
   let payload: any;
@@ -157,8 +166,9 @@ export const me = controller(async (req, res, next) => {
   try {
     payload = jwt.verify(accessToken, process.env.JWT_SECRET!);
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
   console.log(payload);
@@ -174,9 +184,11 @@ export const me = controller(async (req, res, next) => {
   });
 
   if (!user) {
-    res.status(401).json({ message: "Unauthorized" });
-    return next();
+    // res.status(401).json({ message: "Unauthorized" });
+    // return next();
+    throw new UnauthorizedError("Unauthorized");
   }
 
-  res.status(200).json({ user });
+  // res.status(200).json({ user });
+  return new HttpResponse(200, { user });
 });
