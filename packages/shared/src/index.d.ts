@@ -1,7 +1,9 @@
+import { Transaction, User } from "@cleartrack/prisma/client";
+
 declare global {
   namespace Express {
     interface Request {
-      user?: { id: number; name: string; email: string }; // Extend this to match your structure
+      user?: SafeUser; // Extend this to match your structure
     }
   }
 
@@ -13,16 +15,15 @@ declare global {
   }
 }
 
-export interface TransactionT {
-  id: string;
-  sender: string;
-  recipient: string;
-  amount: number;
-  createdAt: string;
+export type SafeUser = Pick<User, "id" | "email" | "name">;
+
+export interface DetailedTransaction extends Transaction {
+  sender: SafeUser;
+  reciever: SafeUser;
 }
 //
-// export interface MeUser {
-//   name: string;
-//   email: string;
-//   image: string;
-// }
+export interface MeUser {
+  name: string;
+  email: string;
+  image: string;
+}

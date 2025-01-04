@@ -1,20 +1,27 @@
-import { RequestHandler } from "express";
 import { prisma } from "@cleartrack/prisma";
 import { Prisma } from "@cleartrack/prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { controller } from "@/utils/asyncHandler";
+import { HttpResponse } from "@cleartrack/http-utils";
+import {
+  BadRequestError,
+  InternalServerError,
+  NotFoundError,
+} from "@cleartrack/http-utils/errors";
 
 const ACCESS_TOKEN_EXPIRY = 1000 * 60 * 15;
 const REFRESH_TOKEN_EXPIRY = 1000 * 60 * 60 * 24 * 7;
 
-export const login: RequestHandler = async (req, res, next) => {
+export const login = controller(async (req, res, next) => {
   const { email, password } = req.body;
 
   const loggedIn = req.cookies.refresh_token;
 
   if (loggedIn) {
-    res.status(200).json({ message: "Already Logged In" });
-    return next();
+    // res.status(200).json({ message: "Already Logged In" });
+    // return next();
+    return new HttpResponse(200, { message: "Already Logged In" });
   }
 
   const user = await prisma.user.findUnique({
@@ -24,15 +31,17 @@ export const login: RequestHandler = async (req, res, next) => {
   });
 
   if (!user) {
-    res.status(404).json({ message: "Invalid credentials" });
-    return next();
+    // res.status(404).json({ message: "Invalid credentials" });
+    // return next();
+    throw new NotFoundError("Invalid credentials");
   }
 
   const isPasswordValid = await bcrypt.compare(password, user.password);
 
   if (!isPasswordValid) {
-    res.status(401).json({ message: "Invalid credentials" });
-    return next();
+    // res.status(401).json({ message: "Invalid credentials" });
+    // return next();
+    return new HttpResponse(401, { message: "Invalid credentials" });
   }
 
   const refreshToken = jwt.sign(
@@ -50,8 +59,9 @@ export const login: RequestHandler = async (req, res, next) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: "Internal Server Error" });
-    return next();
+    // res.status(500).json({ message: "Internal Server Error" });
+    // return next();
+    throw new InternalServerError("Internal Server Error");
   }
 
   res.cookie("refresh_token", refreshToken, {
@@ -60,9 +70,9 @@ export const login: RequestHandler = async (req, res, next) => {
   });
 
   res.status(200).json({ message: "Logged in" });
-};
+});
 
-export const register: RequestHandler = async (req, res, next) => {
+export const register = controller(async (req, res, next) => {
   const { name, email, password } = req.body;
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -79,20 +89,21 @@ export const register: RequestHandler = async (req, res, next) => {
     res.status(201).json({ user });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      res.status(400).json({ message: "Already Registered" });
-      return next();
+      // res.status(400).json({ message: "Already Registered" });
+      // return next();
+      throw new BadRequestError("Already Registered");
     }
   }
-};
+});
 
-export const logout: RequestHandler = (req, res, next) => {
+export const logout = controller((req, res, next) => {
   // res.clearCookie("access_token");
   res.clearCookie("refresh_token");
 
   res.status(200).json({ message: "Logged out" });
-};
+});
 
-export const refresh: RequestHandler = async (req, res, next) => {
+export const refresh = controller(async (req, res, next) => {
   const refreshToken = req.cookies.refresh_token;
 
   if (!refreshToken) {
@@ -131,9 +142,9 @@ export const refresh: RequestHandler = async (req, res, next) => {
   // });
 
   res.status(200).json({ accessToken });
-};
+});
 
-export const me: RequestHandler = async (req, res, next) => {
+export const me = controller(async (req, res, next) => {
   const accessToken = req.headers.authorization?.split(" ")[1];
 
   if (!accessToken) {
@@ -168,4 +179,4 @@ export const me: RequestHandler = async (req, res, next) => {
   }
 
   res.status(200).json({ user });
-};
+});

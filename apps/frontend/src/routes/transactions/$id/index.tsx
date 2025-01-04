@@ -1,12 +1,12 @@
 /** @format */
 
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { getTransactions } from "@/lib/mock";
+import api from "@/lib/api";
 
 export const Route = createFileRoute("/transactions/$id/")({
   component: RouteComponent,
   loader: async ({ params: { id } }) => {
-    const transactions = await getTransactions(id);
+    const transactions = await api.transactions.get(id);
     if (!transactions || transactions.length === 0) throw notFound();
 
     return transactions;
@@ -20,8 +20,18 @@ function RouteComponent() {
     <div>
       {data.map((item) => (
         <div key={item.id}>
-          <div>{item.sender}</div>
-          <div>{item.recipient}</div>
+          <div>
+            <span>Sender</span>
+            <span>{item.sender.name}</span>
+          </div>
+          <div>
+            <span>Reciever</span>
+            <span>{item.reciever.name}</span>
+          </div>
+          <div>
+            <span>Amount</span>
+            <span>{item.amount}</span>
+          </div>
         </div>
       ))}
     </div>

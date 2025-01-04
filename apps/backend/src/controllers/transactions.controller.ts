@@ -4,20 +4,48 @@ import { RequestHandler } from "express";
 import { createTransactionSchema } from "@/schemas/transactions.schema";
 import { z } from "zod";
 import { prisma } from "@cleartrack/prisma";
+import { HttpResponse, HttpStatus } from "@cleartrack/http-utils";
+import { controller } from "@/utils/asyncHandler";
+import {
+  InternalServerError,
+  NotFoundError,
+  UnauthorizedError,
+} from "@cleartrack/http-utils/errors";
 
-export const getTransactions: RequestHandler = (req, res) => {
+export const getTransactions = controller(async (req, res) => {
   const id = Number(req.params.id);
 
-  const transactions = prisma.transaction.findMany({
+  const transactions = await prisma.transaction.findMany({
     where: {
       id,
     },
+    omit: {
+      senderId: true,
+      recieverId: true,
+    },
+    include: {
+      sender: {
+        select: {
+          email: true,
+          name: true,
+          id: true,
+        },
+      },
+      reciever: {
+        select: {
+          email: true,
+          name: true,
+          id: true,
+        },
+      },
+    },
   });
 
-  res.status(200).json({ transactions });
-};
+  // res.status(200).json({ transactions });
+  return new HttpResponse(HttpStatus.OK, { transactions });
+});
 
-export const getTransactionsFrom: RequestHandler = async (req, res) => {
+export const getTransactionsFrom = controller(async (req, res) => {
   const id = Number(req.params.id);
 
   const transactions = await prisma.transaction.findMany({
@@ -26,12 +54,14 @@ export const getTransactionsFrom: RequestHandler = async (req, res) => {
     },
   });
 
-  res.status(200).json({
-    transactions,
-  });
-};
+  // res.status(200).json({
+  //   transactions,
+  // });
 
-export const getPendingTransactionsFrom: RequestHandler = async (req, res) => {
+  return new HttpResponse(HttpStatus.OK, { transactions });
+});
+
+export const getPendingTransactionsFrom = controller(async (req, res) => {
   const id = Number(req.params.id);
 
   const transactions = await prisma.pendingTransaction.findMany({
@@ -43,9 +73,9 @@ export const getPendingTransactionsFrom: RequestHandler = async (req, res) => {
   res.status(200).json({
     transactions,
   });
-};
+});
 
-export const createTransaction: RequestHandler = async (req, res) => {
+export const createTransaction = controller(async (req, res) => {
   const { amount, expirationTime, recieverId } = req.body as z.infer<
     typeof createTransactionSchema
   >;
@@ -84,14 +114,14 @@ export const createTransaction: RequestHandler = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
-    return;
+    // res.status(500).json({ message: "Internal server error" });
+    throw new InternalServerError("Internal server error");
   }
 
   res.status(201).json({});
-};
+});
 
-export const acceptTransaction: RequestHandler = async (req, res) => {
+export const acceptTransaction = controller(async (req, res) => {
   const id = Number(req.params.id);
 
   const pendingTransaction = await prisma.pendingTransaction.findUnique({
@@ -101,8 +131,8 @@ export const acceptTransaction: RequestHandler = async (req, res) => {
   });
 
   if (!pendingTransaction) {
-    res.status(404).json({ message: "Transaction not found" });
-    return;
+    // res.status(404).json({ message: "Transaction not found" });
+    throw new NotFoundError("Transaction not found");
   }
 
   const { amount, expirationTime, recieverId, senderId, previousHash } =
@@ -119,8 +149,9 @@ export const acceptTransaction: RequestHandler = async (req, res) => {
   // console.log(userId, recieverId);
 
   if (userId !== recieverId) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+    // res.status(401).json({ message: "Unauthorized" });
+    // return;
+    throw new UnauthorizedError("Unauthorized");
   }
 
   const transaction = await prisma.transaction.create({
@@ -142,10 +173,11 @@ export const acceptTransaction: RequestHandler = async (req, res) => {
     },
   });
 
-  res.status(201).json({ transaction });
-};
+  // res.status(201).json({ transaction });
+  return new HttpResponse(HttpStatus.CREATED, { transaction });
+});
 
-export const rejectTransaction: RequestHandler = async (req, res) => {
+export const rejectTransaction = controller(async (req, res) => {
   const id = Number(req.params.id);
 
   const pendingTransaction = await prisma.pendingTransaction.findUnique({
@@ -155,8 +187,8 @@ export const rejectTransaction: RequestHandler = async (req, res) => {
   });
 
   if (!pendingTransaction) {
-    res.status(404).json({ message: "Transaction not found" });
-    return;
+    // res.status(404).json({ message: "Transaction not found" });
+    throw new NotFoundError("Transaction not found");
   }
 
   const { recieverId } = jwt.verify(
@@ -169,8 +201,9 @@ export const rejectTransaction: RequestHandler = async (req, res) => {
   const { id: userId } = req?.user!;
 
   if (userId !== recieverId) {
-    res.status(401).json({ message: "Unauthorized" });
-    return;
+    // res.status(401).json({ message: "Unauthorized" });
+    // return;
+    throw new UnauthorizedError("Unauthorized");
   }
 
   await prisma.pendingTransaction.delete({
@@ -186,5 +219,6 @@ export const rejectTransaction: RequestHandler = async (req, res) => {
     },
   });
 
-  res.status(204).json({});
-};
+  // res.status(204).json({});
+  return new HttpResponse(HttpStatus.NO_CONTENT);
+});

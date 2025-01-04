@@ -1,0 +1,13 @@
+{
+  "name": "@cleartrack/http-utils",
+  "version": "1.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts",
+    "./errors": "./src/errors/index.ts"
+  },
+  "dependencies": {
+    "typescript": "latest",
+    "express": "latest"
+  }
+}

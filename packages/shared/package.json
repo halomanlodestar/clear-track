@@ -6,6 +6,7 @@
 		"./types": "./src/index.d.ts"
 	},
 	"dependencies": {
-		"typescript": "latest"
+		"typescript": "latest",
+		"@cleartrack/prisma": "*"
 	}
 }

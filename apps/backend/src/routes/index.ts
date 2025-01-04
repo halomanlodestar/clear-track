@@ -6,8 +6,9 @@ import { pingController } from "../controllers/ping.controller";
 import authRouter from "./auth.routes";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import { wrapRouter } from "@/utils/routerWrapper";
 
-export const mainRouter = Router();
+const mainRouter = Router();
 
 // Middlewares //
 mainRouter.use(bodyParser.json());
@@ -17,3 +18,6 @@ mainRouter.use(cookieParser());
 mainRouter.use("/transactions", transactionsRouter);
 mainRouter.use("/auth", authRouter);
 mainRouter.use("/ping", pingController);
+
+// Wrapping all routes with asyncHandler //
+export { mainRouter };
