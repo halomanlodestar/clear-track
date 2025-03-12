@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "tsc",
-		"dev": "tsx watch ./src/app.ts --include \"./src/**/*\""
+		"dev": "tsc --watch"
 	},
 	"keywords": [],
 	"author": "",
