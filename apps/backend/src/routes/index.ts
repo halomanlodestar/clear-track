@@ -6,7 +6,6 @@ import { pingController } from "../controllers/ping.controller";
 import authRouter from "./auth.routes";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
-import { wrapRouter } from "@/utils/routerWrapper";
 
 const mainRouter = Router();
 
